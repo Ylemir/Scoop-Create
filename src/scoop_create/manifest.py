@@ -66,23 +66,23 @@ def _build_bin_field(
     """
     bin_name = f"{app_name}.exe"
 
+    if asset_name.endswith(".exe") and asset_name != bin_name:
+        bin = [[asset_name, app_name]]
+    else:
+        bin = bin_name
+
     if app_type == APP_TYPE_CLI:
-        if bin_name == asset_name:
-            return BinResult(bin=bin_name, shortcuts=None)
-        if asset_name.endswith(".exe"):
-            return BinResult(bin=[[asset_name, app_name]], shortcuts=None)
-        return BinResult(bin=[[bin_name, app_name]], shortcuts=None)
+        return BinResult(bin=bin, shortcuts=None)
 
     if asset_name.endswith(".exe"):
-        bin_name = asset_name
+        shortcuts = [[asset_name, app_name]]
+    else:
+        shortcuts = [[bin_name, app_name]]
 
     if app_type == APP_TYPE_GUI:
-        return BinResult(bin=None, shortcuts=[[bin_name, app_name]])
+        return BinResult(bin=None, shortcuts=shortcuts)
 
-    return BinResult(
-        bin=[[bin_name, app_name]],
-        shortcuts=[[bin_name, app_name]],
-    )
+    return BinResult(bin=bin, shortcuts=shortcuts)
 
 
 def _build_autoupdate_url(asset_url: str, version: str) -> str:
@@ -184,13 +184,12 @@ def prepare_manifest_data(
     """Convert manifest to dict, optionally merging with an existing file."""
     new_data = manifest.to_dict()
 
-    if ignore_fields:
-        for field_path in ignore_fields:
-            _remove_nested_field(new_data, field_path)
-
     if merge and output_path is not None:
         existing = load_existing_manifest(output_path)
         if existing is not None:
+            if ignore_fields:
+                for field_path in ignore_fields:
+                    _remove_nested_field(new_data, field_path)
             new_data = merge_manifest(existing, new_data)
 
     return new_data

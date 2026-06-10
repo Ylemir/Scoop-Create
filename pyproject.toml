@@ -1,6 +1,6 @@
 [project]
 name = "scoop-create"
-version = "0.0.5"
+version = "0.0.6"
 description = "Generate Scoop app manifests from GitHub repository URLs"
 readme = "README.md"
 license = "MIT"

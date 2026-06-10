@@ -8,7 +8,7 @@ Generate Scoop app manifests from GitHub repository URLs, replacing `scoop creat
 - **Smart asset ranking**: Prefers x64 portable `.zip`/`.7z` builds; filters out source code and non-Windows artifacts
 - **App type inference**: Detects CLI, GUI, or both from repo topics/description and asset names
 - **SHA256 hashing**: Downloads the asset and computes hash when no digest is provided by GitHub
-- **Manifest merge**: Merges new data into existing manifest files, preserving manual edits
+- **Manifest update**: Merges new data into existing manifest files, preserving manual edits
 - **Interactive mode**: Confirm and edit every field before writing
 - **Scoop hook**: Seamlessly replace `scoop create` with `scoop-create`
 
@@ -121,10 +121,7 @@ Config file: `config.json`, searched in order:
   "github_token": "",
   "output_dir": "D:\\scoop-buckets\\bucket",
   "proxy": "http://127.0.0.1:7890",
-  "ignore_manifest_fields": [
-    "bin",
-    "architecture.64bit.hash"
-  ],
+  "ignore_manifest_fields": ["bin", "architecture.64bit.hash"],
   "include_pr": false,
   "interactive": false,
   "verify": true,
@@ -133,7 +130,19 @@ Config file: `config.json`, searched in order:
 }
 ```
 
-**Priority order**: CLI arguments > config file > environment variables (`GITHUB_TOKEN`, `HTTP_PROXY`, `HTTPS_PROXY`) > defaults
+| Field | Description |
+|-------|-------------|
+| `github_token` | GitHub personal access token (or `GITHUB_TOKEN` env var) |
+| `output_dir` | Default output directory for generated manifests |
+| `proxy` | HTTP/HTTPS proxy URL (or `HTTP_PROXY` / `HTTPS_PROXY` env vars) |
+| `ignore_manifest_fields` | Fields to skip when **updating** an existing manifest (dot-separated for nested fields) |
+| `include_pr` | Include pre-releases when selecting the latest release |
+| `interactive` | Enable interactive mode by default |
+| `verify` | Enable TLS certificate verification |
+| `timeout` | HTTP request timeout in seconds |
+| `debug` | Enable debug logging |
+
+**Priority**: CLI args > config file > env vars (`GITHUB_TOKEN`, `HTTP_PROXY`, `HTTPS_PROXY`) > defaults
 
 ## Generated Manifest
 

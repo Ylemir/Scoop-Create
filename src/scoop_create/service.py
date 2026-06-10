@@ -20,7 +20,12 @@ from scoop_create.manifest import (
     build_manifest,
     prepare_manifest_data,
 )
-from scoop_create.utils import get_http_client, guess_best_asset, parse_github_url
+from scoop_create.utils import (
+    get_http_client,
+    guess_best_asset,
+    normalize_scoop_name,
+    parse_github_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +60,14 @@ def _extract_http_config(config: AppConfig) -> dict[str, Any]:
 
 
 def get_output_path(config: AppConfig, repo: str) -> Path:
-    """Determine the output file path from config and repo name."""
+    """Determine the output file path from config and repo name.
+
+    The repo name is normalized to Scoop convention: lowercase, hyphens only.
+    """
+    name = normalize_scoop_name(repo)
     if config.output_dir:
-        return Path(config.output_dir) / f"{repo}.json"
-    return Path(f"{repo}.json")
+        return Path(config.output_dir) / f"{name}.json"
+    return Path(f"{name}.json")
 
 
 def _download_and_hash_asset(url: str, http_config: dict[str, Any]) -> str:

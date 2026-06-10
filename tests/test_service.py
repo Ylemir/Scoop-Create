@@ -23,6 +23,36 @@ class TestGetOutputPath:
         path = get_output_path(config, "myrepo")
         assert path == Path("myrepo.json")
 
+    def test_lowercases_name(self) -> None:
+        config = AppConfig()
+        path = get_output_path(config, "MyRepo")
+        assert path == Path("myrepo.json")
+
+    def test_replaces_underscores_with_hyphens(self) -> None:
+        config = AppConfig()
+        path = get_output_path(config, "my_cool_repo")
+        assert path == Path("my-cool-repo.json")
+
+    def test_replaces_spaces_with_hyphens(self) -> None:
+        config = AppConfig()
+        path = get_output_path(config, "My Cool App")
+        assert path == Path("my-cool-app.json")
+
+    def test_collapses_multiple_hyphens(self) -> None:
+        config = AppConfig()
+        path = get_output_path(config, "my__repo--name")
+        assert path == Path("my-repo-name.json")
+
+    def test_strips_leading_trailing_hyphens(self) -> None:
+        config = AppConfig()
+        path = get_output_path(config, "--my-repo-")
+        assert path == Path("my-repo.json")
+
+    def test_normalized_with_output_dir(self) -> None:
+        config = AppConfig(output_dir="./output")
+        path = get_output_path(config, "My_Repo")
+        assert path == Path("./output/my-repo.json")
+
 
 class TestCreateManifest:
     """Tests for create_manifest function with mocked GitHub API."""

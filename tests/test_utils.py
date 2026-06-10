@@ -2,7 +2,37 @@
 
 import pytest
 
-from scoop_create.utils import get_http_client, guess_best_asset, parse_github_url
+from scoop_create.utils import (
+    get_http_client,
+    guess_best_asset,
+    normalize_scoop_name,
+    parse_github_url,
+)
+
+
+class TestNormalizeScoopName:
+    """Tests for normalize_scoop_name function."""
+
+    def test_lowercase(self) -> None:
+        assert normalize_scoop_name("MyApp") == "myapp"
+
+    def test_replace_underscores(self) -> None:
+        assert normalize_scoop_name("my_cool_app") == "my-cool-app"
+
+    def test_replace_spaces(self) -> None:
+        assert normalize_scoop_name("My Cool App") == "my-cool-app"
+
+    def test_collapse_multiple_hyphens(self) -> None:
+        assert normalize_scoop_name("my__app--name") == "my-app-name"
+
+    def test_strip_leading_trailing_hyphens(self) -> None:
+        assert normalize_scoop_name("--my-app-") == "my-app"
+
+    def test_already_normalized(self) -> None:
+        assert normalize_scoop_name("my-app") == "my-app"
+
+    def test_empty_string(self) -> None:
+        assert normalize_scoop_name("") == ""
 
 
 class TestParseGithubUrl:

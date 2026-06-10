@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scoop_create.manifest import (
+    APP_TYPE_BOTH,
     APP_TYPE_CLI,
     APP_TYPE_GUI,
     Architecture,
@@ -76,7 +77,7 @@ class TestBuildBinField:
 
     def test_non_exe(self) -> None:
         result = _build_bin_field("app", "app-1.0.zip")
-        assert result.bin == [["app.exe", "app"]]
+        assert result.bin == "app.exe"
         assert result.shortcuts == [["app.exe", "app"]]
 
     def test_cli_exe_same_name(self) -> None:
@@ -91,7 +92,7 @@ class TestBuildBinField:
 
     def test_cli_zip(self) -> None:
         result = _build_bin_field("app", "app-1.0.zip", app_type=APP_TYPE_CLI)
-        assert result.bin == [["app.exe", "app"]]
+        assert result.bin == "app.exe"
         assert result.shortcuts is None
 
     def test_gui_exe_different_name(self) -> None:
@@ -102,6 +103,21 @@ class TestBuildBinField:
     def test_gui_zip(self) -> None:
         result = _build_bin_field("app", "app-1.0.zip", app_type=APP_TYPE_GUI)
         assert result.bin is None
+        assert result.shortcuts == [["app.exe", "app"]]
+
+    def test_both_exe_same_name(self) -> None:
+        result = _build_bin_field("app", "app.exe", app_type=APP_TYPE_BOTH)
+        assert result.bin == "app.exe"
+        assert result.shortcuts == [["app.exe", "app"]]
+
+    def test_both_exe_different_name_explicit(self) -> None:
+        result = _build_bin_field("app", "launcher.exe", app_type=APP_TYPE_BOTH)
+        assert result.bin == [["launcher.exe", "app"]]
+        assert result.shortcuts == [["launcher.exe", "app"]]
+
+    def test_both_non_exe_explicit(self) -> None:
+        result = _build_bin_field("app", "app-1.0.zip", app_type=APP_TYPE_BOTH)
+        assert result.bin == "app.exe"
         assert result.shortcuts == [["app.exe", "app"]]
 
 
@@ -256,15 +272,18 @@ class TestPrepareManifestData:
         result = prepare_manifest_data(manifest, merge=True, output_path=path)
         assert result["version"] == "1.0.0"
 
-    def test_ignore_fields_removes_top_level(self) -> None:
+    def test_ignore_fields_no_effect_without_existing(self, tmp_path: Path) -> None:
         manifest = Manifest(
             version="1.0.0",
             description="Test",
             homepage="https://example.com",
             license="MIT",
         )
-        result = prepare_manifest_data(manifest, merge=False, ignore_fields=["license"])
-        assert "license" not in result
+        path = tmp_path / "nonexistent.json"
+        result = prepare_manifest_data(
+            manifest, merge=True, output_path=path, ignore_fields=["license"]
+        )
+        assert "license" in result
 
     def test_ignore_fields_removes_nested(self, tmp_path: Path) -> None:
         manifest = Manifest(

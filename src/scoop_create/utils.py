@@ -32,6 +32,18 @@ def get_http_client(
     return httpx.Client(**kwargs)
 
 
+def normalize_scoop_name(name: str) -> str:
+    """Normalize a string to conform to Scoop manifest naming conventions.
+
+    Scoop convention: lowercase, hyphens as separators, no underscores/spaces.
+    """
+    name = name.lower().strip()
+    name = name.replace("_", "-").replace(" ", "-")
+    name = re.sub(r"-+", "-", name)
+    name = name.strip("-")
+    return name
+
+
 def parse_github_url(url: str) -> tuple[str, str]:
     """Parse a GitHub repository URL into (owner, repo).
 
